@@ -22,4 +22,16 @@ router.delete("/:id", async (req, res) => {
   return res.status(204).send();
 });
 
+router.put("/:id", async (req, res) => {
+  const id = req.params.id;
+  const blog = await Blog.findByPk(id);
+  if (blog) {
+    blog.likes = req.body.likes;
+    await blog.save();
+    res.json(blog);
+  } else {
+    res.status(404).end();
+  }
+});
+
 module.exports = router;
