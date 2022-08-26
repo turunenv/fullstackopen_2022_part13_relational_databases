@@ -1,35 +1,20 @@
-require('dotenv').config()
-const express = require('express')
+const express = require("express");
+const app = express();
 
-// import the model and call the sync-method to create the db-table if it doesn't exist
-const Blog = require('./models/Blog')
-Blog.sync()
+const { PORT } = require("./util/config");
+const { connectToDatabase } = require("./util/db");
 
-const app = express()
-app.use(express.json())
+const blogRouter = require("./controllers/blogs");
 
-app.get('/api/blogs', async (req, res) => {
-  const blogs = await Blog.findAll()
-  res.json(blogs)
-})
+app.use(express.json());
 
-app.post('/api/blogs', async (req, res) => {
-  console.log(req.body)
-  try {
-    const blog = await Blog.create(req.body)
-    return res.json(blog)
-  } catch (error) {
-    return res.status(400).json({ error })
-  }
-})
+app.use("/api/blogs", blogRouter);
 
-app.delete('/api/blogs/:id', async (req, res) => {
-  const id = req.params.id
-  await Blog.destroy({ where: { id, } })
-  return res.status(204).send()
-})
+const start = async () => {
+  await connectToDatabase();
+  app.listen(PORT, () => {
+    console.log(`server running on port ${PORT}`);
+  });
+};
 
-const PORT = process.env.PORT || 3001
-app.listen(PORT, () => {
-  console.log(`server running on port ${PORT}`)
-})
+start();
