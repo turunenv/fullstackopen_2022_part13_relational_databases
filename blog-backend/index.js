@@ -1,4 +1,7 @@
 const express = require("express");
+require("express-async-errors");
+const { errorHandler } = require("./middleware/middleware")
+
 const app = express();
 
 const { PORT } = require("./util/config");
@@ -9,6 +12,8 @@ const blogRouter = require("./controllers/blogs");
 app.use(express.json());
 
 app.use("/api/blogs", blogRouter);
+
+app.use(errorHandler);
 
 const start = async () => {
   await connectToDatabase();
