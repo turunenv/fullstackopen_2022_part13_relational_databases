@@ -16,7 +16,7 @@ const tokenExtractor = (req, res, next) => {
       return res.status(401).json({ error: "token invalid" })
     }    
   } else {
-    res.status(401).json({ error: "token missing" })
+     return res.status(401).json({ error: "token missing" })
   }
 
   next();
@@ -46,15 +46,28 @@ router.post("/", tokenExtractor, async (req, res) => {
       const blog = await Blog.create({ ...req.body, userId: user.id });
       return res.json(blog);
     } catch (error) {
-      return res.status(400).json({ error: "we got rekt in the blogs post-handler" });
+      return res.status(400).json({ error });
     }
 });
 
 router.delete("/:id", blogFinder, tokenExtractor, async (req, res) => {
+  //does the blog being deleted exist?
   if (req.blog) {
-    await req.blog.destroy();
+    try {
+      //is this user logged in, aka is the jsonwebtoken in the request?
+      const user = await User.findByPk(req.decodedToken.id);
+      //is the user the creator of the blog?
+      if (user.id === req.blog.userId) {
+        //deletion authorized
+        await req.blog.destroy();
+      } else {
+        return res.status(401).send({ error: "unauthorized" });
+      } 
+    } catch (error) {
+      res.status(401).send({ error })
+    }
+    return res.status(204).end();
   }
-  return res.status(204).end();
 });
 
 router.put("/:id", blogFinder, async (req, res) => {
