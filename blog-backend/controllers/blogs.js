@@ -1,6 +1,26 @@
 const router = require("express").Router();
+const jwt = require("jsonwebtoken");
 
 const { Blog } = require("../models");
+const { User } = require("../models");
+const { SECRET } = require("../util/config");
+
+//middleware for extracting the jwt-token from an incoming request
+const tokenExtractor = (req, res, next) => {
+  //token should be found from the authorization header
+  const authorization = req.get("authorization");
+  if (authorization && authorization.toLowerCase().startsWith("bearer")) {
+    
+    req.decodedToken = jwt.verify(authorization.substring(7), SECRET);
+    if (!req.decodedToken.id) {
+      return res.status(401).json({ error: "token invalid" })
+    }    
+  } else {
+    res.status(401).json({ error: "token missing" })
+  }
+
+  next();
+}
 
 const blogFinder = async(req, res, next) => {
   req.blog = await Blog.findByPk(req.params.id);
@@ -19,12 +39,18 @@ router.get("/:id", blogFinder, async(req, res) => {
   res.json(404).end();
 })
 
-router.post("/", async (req, res) => {
-    const blog = await Blog.create(req.body);
-    return res.json(blog);
+router.post("/", tokenExtractor, async (req, res) => {
+    try {
+      const user = await User.findByPk(req.decodedToken.id);
+    
+      const blog = await Blog.create({ ...req.body, userId: user.id });
+      return res.json(blog);
+    } catch (error) {
+      return res.status(400).json({ error: "we got rekt in the blogs post-handler" });
+    }
 });
 
-router.delete("/:id", blogFinder, async (req, res) => {
+router.delete("/:id", blogFinder, tokenExtractor, async (req, res) => {
   if (req.blog) {
     await req.blog.destroy();
   }
