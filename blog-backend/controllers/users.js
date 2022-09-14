@@ -2,6 +2,7 @@ const router = require("express").Router();
 const bcrypt = require("bcrypt");
 
 const { User } = require("../models");
+const { Blog } = require("../models");
 
 //create a UserException object to be passed to
 //the error handler when we run into problems
@@ -10,7 +11,12 @@ function UserException(message) {
 }
 
 router.get("/", async (req, res) => {
-  const users = await User.findAll();
+  const users = await User.findAll({
+    attributes: { exclude: ["userId"] },
+    include: {
+      model: Blog,
+    }
+  });
   res.json(users);
 });
 
@@ -30,7 +36,6 @@ router.post("/", async (req, res) => {
 });
 
 router.put("/:username", async (req, res) => {
-  console.log("USERNAME URL PARAM IS", req.params.username)
   const user = await User.findOne({
     where: {
       username: req.params.username,
