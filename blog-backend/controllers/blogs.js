@@ -35,12 +35,23 @@ router.get("/", async (req, res) => {
   console.log(`search is ${search}`);
 
   //a variable to be included in the Blog.findAll function call below
-  const where = {};
+  let where = {};
 
   if (search) {
-    //query included a search param for the title, include this in the where-object
-    where.title = {
-      [Op.iLike]: `%${search}%`,
+    //query included a search param for the title or author, include this in the where-object
+    where = {
+      [Op.or]: [
+        {
+          title: {
+            [Op.iLike]: `%${search}%`
+          }
+        },
+        {
+          author: {
+            [Op.iLike]: `%${search}%`
+          }
+        }
+      ]
     }
   }
   const blogs = await Blog.findAll({
