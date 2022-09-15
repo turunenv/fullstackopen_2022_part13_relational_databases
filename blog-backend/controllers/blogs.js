@@ -5,6 +5,8 @@ const { Blog } = require("../models");
 const { User } = require("../models");
 const { SECRET } = require("../util/config");
 
+const { Op } = require("sequelize");
+
 //middleware for extracting the jwt-token from an incoming request
 const tokenExtractor = (req, res, next) => {
   //token should be found from the authorization header
@@ -28,12 +30,26 @@ const blogFinder = async(req, res, next) => {
 }
 
 router.get("/", async (req, res) => {
+  //get the url search-parameter
+  const search = req.query.search;
+  console.log(`search is ${search}`);
+
+  //a variable to be included in the Blog.findAll function call below
+  const where = {};
+
+  if (search) {
+    //query included a search param for the title, include this in the where-object
+    where.title = {
+      [Op.iLike]: `%${search}%`,
+    }
+  }
   const blogs = await Blog.findAll({
     attributes: { exclude: ["userId"] },
     include: {
       model: User,
       attributes: ["name"]
-    }
+    },
+    where,
   });
   res.json(blogs);
 });
