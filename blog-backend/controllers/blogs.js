@@ -60,6 +60,10 @@ router.get("/", async (req, res) => {
       model: User,
       attributes: ["name"]
     },
+    //order by likes in descending order
+    order: [
+      ["likes", "DESC"]
+    ],
     where,
   });
   res.json(blogs);
