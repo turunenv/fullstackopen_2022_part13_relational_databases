@@ -20,6 +20,10 @@ UserBlogs.init({
         allowNull: false,
         references: { model: "blogs", key: "id" },
       },
+      read: {
+        type: DataTypes.BOOLEAN,
+        defaulValue: false,
+      }
     }, {
         sequelize,
         underscored: true,
