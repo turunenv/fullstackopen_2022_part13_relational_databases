@@ -43,7 +43,7 @@ module.exports = {
         type: DataTypes.STRING,
         allowNull: false
       },
-      hashedPassword: {
+      hashed_password: {
         type: DataTypes.STRING(64),
         allowNull: false,
       }

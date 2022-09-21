@@ -12,13 +12,9 @@ const tokenExtractor = (req, res, next) => {
   //token should be found from the authorization header
   const authorization = req.get("authorization");
   if (authorization && authorization.toLowerCase().startsWith("bearer")) {
-    
-    req.decodedToken = jwt.verify(authorization.substring(7), SECRET);
-    if (!req.decodedToken.id) {
-      return res.status(401).json({ error: "token invalid" })
-    }    
+    req.decodedToken = jwt.verify(authorization.substring(7), SECRET);  
   } else {
-     return res.status(401).json({ error: "token missing" })
+     throw Error("token missing");
   }
 
   next();
@@ -77,14 +73,9 @@ router.get("/:id", blogFinder, async(req, res) => {
 })
 
 router.post("/", tokenExtractor, async (req, res) => {
-    try {
-      const user = await User.findByPk(req.decodedToken.id);
-    
-      const blog = await Blog.create({ ...req.body, userId: user.id });
-      return res.json(blog);
-    } catch (error) {
-      return res.status(400).json({ error });
-    }
+    const user = await User.findByPk(req.decodedToken.id);
+    const blog = await Blog.create({ ...req.body, userId: user.id });
+    return res.json(blog);
 });
 
 router.delete("/:id", blogFinder, tokenExtractor, async (req, res) => {
