@@ -15,9 +15,30 @@ router.get("/", async (req, res) => {
     attributes: { exclude: ["userId"] },
     include: {
       model: Blog,
-    }
+    },
   });
   res.json(users);
+});
+
+router.get("/:id", async (req, res) => {
+  const id = req.params.id;
+  const user = await User.findByPk(id, {
+    include: [
+      {
+        model: Blog,
+        as: "marked_blogs",
+        attributes: { exclude: ["userId", "createdAt", "updatedAt"] },
+        through: { attributes: [] },
+      },
+    ],
+    attributes: { exclude: ["id", "hashedPassword", "createdAt", "updatedAt"] }
+  });
+
+  if (user) {
+    res.json(user);
+  } else {
+    res.status(404).end();
+  }
 });
 
 router.post("/", async (req, res) => {
@@ -42,13 +63,11 @@ router.put("/:username", async (req, res) => {
     },
   });
 
-  console.log("** user is", user)
-
   if (!user) {
     throw new UserException("user does not exist");
   }
   if (!req.body.username) {
-    throw new UserException("new username was not included")
+    throw new UserException("new username was not included");
   }
 
   user.username = req.body.username;
