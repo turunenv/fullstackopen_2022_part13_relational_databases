@@ -22,16 +22,28 @@ router.get("/", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   const id = req.params.id;
+
+  //object to store the possible read-filter
+  let where = {};
+
+  if (req.query.read) {
+    if (["true", "false"].includes(req.query.read)) {
+      where.read = req.query.read === "true" ? true : false;
+    }
+  }
+  console.log(where);
+
   const user = await User.findByPk(id, {
     include: [
       {
         model: Blog,
         as: "marked_blogs",
         attributes: { exclude: ["userId", "createdAt", "updatedAt"] },
-        through: { attributes: ["id", "read"] },
+        through: { attributes: ["id", "read"], where},
+  
       },
     ],
-    attributes: { exclude: ["id", "hashedPassword", "createdAt", "updatedAt"] }
+    attributes: { exclude: ["id", "hashedPassword", "createdAt", "updatedAt"] },
   });
 
   if (user) {
