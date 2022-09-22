@@ -24,6 +24,20 @@ const errorHandler = (error, req, res, next) => {
   next(error);
 };
 
+//middleware for extracting the jwt-token from an incoming request
+const tokenExtractor = (req, res, next) => {
+  //token should be found from the authorization header
+  const authorization = req.get("authorization");
+  if (authorization && authorization.toLowerCase().startsWith("bearer")) {
+    req.decodedToken = jwt.verify(authorization.substring(7), SECRET);  
+  } else {
+     throw Error("token missing");
+  }
+
+  next();
+}
+
 module.exports = {
   errorHandler,
+  tokenExtractor,
 };

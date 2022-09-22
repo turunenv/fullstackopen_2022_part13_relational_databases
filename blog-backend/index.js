@@ -1,6 +1,6 @@
 const express = require("express");
 require("express-async-errors");
-const { errorHandler } = require("./middleware/middleware");
+const { errorHandler } = require("./util/middleware");
 
 const app = express();
 

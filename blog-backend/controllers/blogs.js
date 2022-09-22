@@ -7,18 +7,7 @@ const { SECRET } = require("../util/config");
 
 const { Op } = require("sequelize");
 
-//middleware for extracting the jwt-token from an incoming request
-const tokenExtractor = (req, res, next) => {
-  //token should be found from the authorization header
-  const authorization = req.get("authorization");
-  if (authorization && authorization.toLowerCase().startsWith("bearer")) {
-    req.decodedToken = jwt.verify(authorization.substring(7), SECRET);  
-  } else {
-     throw Error("token missing");
-  }
-
-  next();
-}
+const tokenExtractor = require("../util/middleware");
 
 const blogFinder = async(req, res, next) => {
   req.blog = await Blog.findByPk(req.params.id);
