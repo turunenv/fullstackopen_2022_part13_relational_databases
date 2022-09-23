@@ -6,7 +6,7 @@ const { User } = require("../models");
 
 const { Op } = require("sequelize");
 
-const { tokenExtractor } = require("../util/middleware");
+const { tokenExtractor, checkSessionValidity } = require("../util/middleware");
 
 const blogFinder = async(req, res, next) => {
   req.blog = await Blog.findByPk(req.params.id);
@@ -60,13 +60,13 @@ router.get("/:id", blogFinder, async(req, res) => {
   res.json(404).end();
 })
 
-router.post("/", tokenExtractor, async (req, res) => {
+router.post("/", tokenExtractor, checkSessionValidity, async (req, res) => {
     const user = await User.findByPk(req.decodedToken.id);
     const blog = await Blog.create({ ...req.body, userId: user.id });
     return res.json(blog);
 });
 
-router.delete("/:id", blogFinder, tokenExtractor, async (req, res) => {
+router.delete("/:id", blogFinder, tokenExtractor, checkSessionValidity, async (req, res) => {
   //does the blog being deleted exist?
   if (req.blog) {
     try {

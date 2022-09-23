@@ -2,7 +2,7 @@ const router = require("express").Router();
 
 const { UserBlogs } = require("../models");
 
-const { tokenExtractor } = require("../util/middleware");
+const { tokenExtractor, checkSessionValidity } = require("../util/middleware");
 
 router.post("/", async (req, res) => {
   const userBlog = req.body;
@@ -11,7 +11,7 @@ router.post("/", async (req, res) => {
   res.json(newUserBlog);
 });
 
-router.put("/:id", tokenExtractor, async (req, res, next) => {
+router.put("/:id", tokenExtractor, checkSessionValidity, async (req, res, next) => {
   const userId = req.decodedToken.id;
  
   const userBlog = await UserBlogs.findByPk(req.params.id);
